@@ -1,89 +1,135 @@
-#include "./order.cpp"
 
 #pragma once
 
-class Limit{
+#include "./order.cpp"
+
+class Limit {
 private:
     int limit_price;
-    int size; // number of orders in a limit_price.
-    int total_volume; // sum of all quantities.
+    int size;
+    int total_volume;
 
-    Order* head_order; // the first priority in the queue.
-    Order* tail_order; // the last priority in the queue.
+    Order* head_order;
+    Order* tail_order;
 
 public:
-    Limit(int _price) : limit_price(_price), size(0), total_volume(0), head_order(nullptr), tail_order(nullptr) {}
+    Limit(int _price)
+        : limit_price(_price),
+          size(0),
+          total_volume(0),
+          head_order(nullptr),
+          tail_order(nullptr) {}
 
-    bool is_empty(){
+    bool is_empty() const {
         return size == 0;
     }
 
-    void enlist_order(Order& _order){
+    int get_total_volume() const {
+        return total_volume;
+    }
+
+    int get_size() const {
+        return size;
+    }
+
+    int get_limit_price() const {
+        return limit_price;
+    }
+
+    Order* get_head_order() const {
+        return head_order;
+    }
+
+    void enlist_order(Order& _order) {
         Order* new_order = &_order;
 
         new_order->next = nullptr;
         new_order->prev = tail_order;
 
-        if (head_order == nullptr){
+        if (head_order == nullptr) {
             head_order = new_order;
-        } else {
+        }
+        else {
             tail_order->next = new_order;
         }
 
         tail_order = new_order;
 
-        size += 1;
+        size++;
         total_volume += new_order->quantity;
 
-        std::cout << "Order Enlisting Success! \n";
+        std::cout << "Order Enlisting Success!\n";
     }
 
-    void remove_order(Order& _order){
+    void remove_order(Order& _order) {
         Order* target = &_order;
 
-        if (target->prev != nullptr){
+        // Unlink from the doubly linked list.
+        if (target->prev != nullptr) {
             target->prev->next = target->next;
-        } else {
+        }
+        else {
             head_order = target->next;
         }
 
-        if (target->next != nullptr){
+        if (target->next != nullptr) {
             target->next->prev = target->prev;
-        } else {
+        }
+        else {
             tail_order = target->prev;
         }
+
+        // Remove the order's remaining volume.
+        total_volume -= target->quantity;
 
         target->next = nullptr;
         target->prev = nullptr;
 
-        size -= 1;
-        total_volume -= target->quantity;
+        size--;
 
-        std::cout << "Order Removed From Limit. \n";
+        std::cout << "Order Removed From Limit.\n";
     }
 
-    void modify_order_quantity(Order& _order, int _new_quantity){
+    void modify_order_quantity(Order& _order, int _new_quantity) {
+        if (_new_quantity < 0) {
+            throw std::invalid_argument("Order quantity cannot be negative.");
+        }
 
+        total_volume -= _order.quantity;
+        _order.quantity = _new_quantity;
+        total_volume += _order.quantity;
     }
 
+    // Call this after a trade has reduced an order's quantity.
+    void reduce_order_quantity(Order& _order, int _executed_quantity) {
+        if (_executed_quantity < 0 ||
+            _executed_quantity > _order.quantity) {
+            throw std::invalid_argument("Invalid executed quantity.");
+        }
 
-    void print_orders_at_limit(){
+        _order.quantity -= _executed_quantity;
+        total_volume -= _executed_quantity;
+    }
+
+    void print_orders_at_limit() const {
         Order* temp = head_order;
 
-        if (temp == nullptr){
-            std::cout << "No Orders \n";
+        if (temp == nullptr) {
+            std::cout << "No Orders\n";
             return;
         }
 
-        while (temp != nullptr){
+        while (temp != nullptr) {
             std::cout << " {";
-            std::cout << " " << temp->order_id << " " << temp->price << " ";
-            std::cout << temp->quantity << " " << static_cast<int>(temp->side) << " " <<
-                std::chrono::system_clock::to_time_t(temp->created_at) << " ";
-            std::cout << "} \n";
+            std::cout << " OrderID: " << temp->order_id
+                      << ", Order Price: " << temp->price
+                      << ", Order Quantity: " << temp->quantity
+                      << ", Order Side: " << static_cast<int>(temp->side)
+                      << ", Created at: "
+                      << std::chrono::system_clock::to_time_t(temp->created_at)
+                      << " }\n";
 
             temp = temp->next;
         }
     }
-
 };

@@ -1,16 +1,17 @@
-#include <iostream>
-#include <random>
-#include <chrono>
-#include <string>
 
 #pragma once
+
+#include <iostream>
+#include <chrono>
+#include <string>
+#include <random>
 
 enum class OrderSide : bool {
     buy,
     sell
 };
 
-int generateID(){
+inline int generateID(){
      std::random_device rd;
      std::mt19937 gen(rd());
      int min = 1000000;
