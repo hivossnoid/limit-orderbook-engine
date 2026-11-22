@@ -1,0 +1,4 @@
+timestamp,bidPrice,askPrice,bidVolume,askVolume
+1795285502,100,101,50,40
+1795285562,101,102,60,35
+1795285622,102,103,45,55
