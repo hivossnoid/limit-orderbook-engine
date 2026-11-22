@@ -1,10 +1,11 @@
 
 #include "./orderbook.h"
-#include "./matching_engine.h"
+#include "../matching_engine/matching_engine.h"
 
 // Constructor
 Orderbook::Orderbook()
-    : matching_engine(std::make_unique<MatchingEngine>(*this)) {}
+    : matching_engine(std::make_unique<MatchingEngine>(*this)), trade_log("./trade_history.csv") {
+    }
 
 // Private methods
 
@@ -18,6 +19,10 @@ Order* Orderbook::build_order(int _price, int _quantity, OrderSide _side) {
     return new_order;
 }
 
+std::vector<Trade>& Orderbook::fetch_trade_history() {
+    return trade_history;
+}
+
 int Orderbook::fetch_maxval() {
     return buy_tree.max_val();
 }
@@ -27,6 +32,11 @@ int Orderbook::fetch_minval() {
 }
 
 // Public methods
+
+void Orderbook::record_trade(const Trade& _trade) {
+    trade_history.push_back(_trade);
+    trade_log.log_trade(_trade);
+}
 
 int Orderbook::get_best_bid() {
     return fetch_maxval();

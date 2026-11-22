@@ -3,10 +3,12 @@
 #include <chrono>
 #include <string>
 
-#include "./orderbook.h"
-#include "./matching_engine.h"
-#include "./limit.cpp"
-#include "./order.cpp"
+#include "./orderbook/orderbook.h"
+#include "./matching_engine/matching_engine.h"
+#include "./orderbook/limit.cpp"
+#include "./orderbook/order.cpp"
+#include "./market_data/market_data_parser.h"
+#include "./market_data/market_data_player.h"
 
 int main() {
 
@@ -172,6 +174,73 @@ int main() {
         book.print_all();
     }
 
+    {
+        std::cout << "\nTEST 10: Trade History\n";
+
+        Orderbook book;
+
+        book.submit_limit_order(100, 3, OrderSide::sell);
+        book.submit_limit_order(100, 5, OrderSide::buy);
+
+        book.submit_limit_order(100, 3, OrderSide::sell);
+
+        book.submit_limit_order(106, 3, OrderSide::sell);
+        book.submit_limit_order(102, 2, OrderSide::sell);
+
+        book.submit_limit_order(110, 5, OrderSide::buy);
+
+        const auto& history = book.fetch_trade_history();
+
+        std::cout << "Recorded trades: " << history.size() << '\n';
+
+        for (const Trade& trade : history) {
+            std::cout << "Buy ID: " << trade.buy_order_id
+                      << " | Sell ID: " << trade.sell_order_id
+                      << " | Price: " << trade.exec_price
+                      << " | Quantity: " << trade.exec_quantity
+                      << '\n';
+        }
+    }
+
+    {
+        std::cout << "\nTEST 11: Historical Market Data Parsing\n";
+
+        std::vector<MarketData> data =
+            MarketDataParser::load_csv("market_data_test.csv");
+
+        std::cout << "Loaded snapshots: " << data.size() << '\n';
+
+        for (const MarketData& snapshot : data) {
+            std::cout << "Bid: " << snapshot.bid_price
+                      << " | Ask: " << snapshot.ask_price
+                      << " | Bid Volume: " << snapshot.bid_volume
+                      << " | Ask Volume: " << snapshot.ask_volume
+                      << '\n';
+        }
+    }
+
+    {
+        std::cout << "\nTEST 12: Historical Market Data Playback\n";
+
+        std::vector<MarketData> data =
+            MarketDataParser::load_csv("market_data_test.csv");
+
+        MarketDataPlayer player(std::move(data));
+
+        while (player.has_next()) {
+            const MarketData& snapshot = player.next();
+
+            std::cout << "Timestamp: "
+                      << std::chrono::system_clock::to_time_t(
+                             snapshot.timestamp
+                         )
+                      << " | Bid: " << snapshot.bid_price
+                      << " | Ask: " << snapshot.ask_price
+                      << " | Bid Volume: " << snapshot.bid_volume
+                      << " | Ask Volume: " << snapshot.ask_volume
+                      << '\n';
+        }
+    }
     std::cout << "\n========== ALL TESTS COMPLETED ==========\n";
 
     return 0;

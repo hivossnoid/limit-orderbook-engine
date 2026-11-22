@@ -24,6 +24,7 @@ int MatchingEngine::execute_trade(
         execution_quantity
     );
 
+    orderbook.record_trade(new_trade);
     return execution_quantity;
 }
 

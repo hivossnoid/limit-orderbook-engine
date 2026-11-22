@@ -6,10 +6,13 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <vector>
 
 #include "./order.cpp"
 #include "./redblacktree.cpp"
 #include "./limit.cpp"
+#include "../trade/trade.h"
+#include "../trade_logger/trade_logger.h"
 
 class MatchingEngine;
 
@@ -22,9 +25,10 @@ private:
     Redblacktree sell_tree;
 
     std::unordered_map<int, Order*> order_bucket;
+    std::vector<Trade> trade_history;
+    TradeLogger trade_log;
 
     Order* build_order(int _price, int _quantity, OrderSide _side);
-
     int fetch_maxval();
     int fetch_minval();
 
@@ -35,6 +39,10 @@ public:
     int get_best_bid();
 
     int get_best_ask();
+
+    void record_trade(const Trade& _trade);
+
+    std::vector<Trade>& fetch_trade_history();
 
     Limit* fetch_limit(OrderSide _side, int _price);
 
