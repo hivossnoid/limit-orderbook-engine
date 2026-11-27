@@ -4,7 +4,7 @@
 ## The following repository implements a `Limit Orderbook` that handles both Sell and Buy orders.
 
 To run and see through the tests:
-`g++ -std=c++17 -Wall -Wextra -Werror ./main.cpp ./matching_engine.cpp ./orderbook.cpp -o ./orderbook.out`
+`g++ -std=c++17 -Wall -Wextra -Werror ./main.cpp ./matching_engine/matching_engine.cpp ./orderbook/orderbook.cpp ./trade_logger/trade_logger.cpp ./market_data/market_data_player.cpp ./market_data/market_data_parser.cpp -o ./orderbook.out`
 
 ---
 
